@@ -43,16 +43,17 @@ let config = {
 		// Mostly these have the format of an array in which each element specifies the
 		// parameter value for one of the cellkinds on the grid.
 		// First value is always cellkind 0 (the background) and is often not used.
-        // NOTE J makes a matrix of adhesion between cell and background, so make sure its symmetric.
+        // NOTE J makes a matrix of adhesion between cells or background, so make sure its symmetric. 
 		
 		// Adhesion parameters:
-		J : [ [NaN, 12, 6], [12, 6, 16], [6, 16, 6] ],
+		J : [ [NaN,20,0], [20,100,200], [0,200,0] ],
 		
 		// VolumeConstraint parameters
 		// VolumeConstraint importance per cellkind
 		// Target volume of each cellkind
-		LAMBDA_V : [0,2,2],
-		V : [0,25,25]		
+		LAMBDA_V : [0,5,NaN],
+		V : [0,500,NaN],
+        IS_BARRIER : [false, false, true]		
 
 		
 	},
@@ -61,7 +62,7 @@ let config = {
 	simsettings : {
 	
 		// Cells on the grid
-		NRCELLS : [1,1],					// Number of cells to seed for all
+		NRCELLS : [3,0],					// Number of cells to seed for all
 		// non-background cellkinds.
 	
 		// Runtime etc
@@ -97,7 +98,8 @@ function initialize(){
 	 /* 	The following functions are defined below and will be added to
 	 	the simulation object.*/
 	 let custommethods = {
-	 	initializeGrid : initializeGrid
+	 	initializeGrid : initializeGrid,
+        buildBorder : buildBorder
 	 }
 	sim = new CPM.Simulation( config, custommethods )
 
@@ -115,19 +117,41 @@ function step(){
 	}
 }
 
-
-
-/* The following custom methods will be added to the simulation object
-below. */
 function initializeGrid(){
 	
-	// add the GridManipulator if not already there and if you need it
+	// add the initializer if not already there
 	if( !this.helpClasses["gm"] ){ this.addGridManipulator() }
 	
-	this.gm.seedCellsInCircle( 1, 500, this.C.midpoint, this.C.extents[0]/3 )
-	this.gm.seedCellsInCircle( 2, 500, this.C.midpoint, this.C.extents[0]/3 )
-
+	let nrcells = this.conf["NRCELLS"], cellkind, i
+	this.buildBorder()
+		
+	// Seed the right number of cells for each cellkind
+	for( cellkind = 0; cellkind < nrcells.length; cellkind ++ ){
+			
+		for( i = 0; i < nrcells[cellkind]; i++ ){
+			// first cell always at the midpoint. Any other cells
+			// randomly.				
+			if( i == 0 ){
+				this.gm.seedCellAt( cellkind+1, this.C.midpoint )
+			} else {
+				this.gm.seedCell( cellkind+1 )
+			}
+		}
+	}
 }
+
+function buildBorder(){
+		
+        let bordervoxels
+            
+        bordervoxels = this.gm.makePlane( [], 0, 0 )
+        bordervoxels = this.gm.makePlane( bordervoxels, 0, this.C.extents[0]-1)
+        bordervoxels = this.gm.makePlane( bordervoxels, 1, 0 )
+        bordervoxels = this.gm.makePlane( bordervoxels, 1, this.C.extents[1]-1)
+        
+        this.gm.changeKind( bordervoxels, 2)
+            
+    }
 
 </script>
 </head>
