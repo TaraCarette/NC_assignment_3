@@ -30,7 +30,7 @@ let config = {
 
 	// Grid settings
 	ndim : 2,
-	field_size : [210,210],
+	field_size : [200,200],
 	
 	// CPM parameters and configuration
 	conf : {
@@ -47,21 +47,30 @@ let config = {
 		
 		// Adhesion parameters:
 		J : [ [NaN,20,200], [20,100,-200], [200,-200,100] ],
+        //EXPLANATION FOR REPORT: [[a,b,c], [d,e,f] [g,h,i]] corresponds to the matrix:
+        // a b c
+        // d e f
+        // g h i    where the first column is the background, the second column is the moving cells and the third column is the obstacle cells. 
+        //          So, b is the adhesion between the moving cells and the background and b == d. f and h are the adhesion between both cells. and so on
+        // this structure is the same for every parameter
 		
 		// VolumeConstraint parameters
 		// VolumeConstraint importance per cellkind
 		// Target volume of each cellkind
 		LAMBDA_V : [0,5,5],
-		V : [0,500,500]	
+		V : [0,500,250],
+        
+        // PerimeterConstraint parameters
+		LAMBDA_P : [0,2,NaN],				// PerimeterConstraint importance per cellkind
+		P : [0,360,360],	            // Target Perimeter of each cellkind
 
-		
 	},
 	
 	// Simulation setup and configuration
 	simsettings : {
 	
 		// Cells on the grid
-		NRCELLS : [3,3],					// Number of cells to seed for all
+		NRCELLS : [3,0],					// Number of cells to seed for all
 		// non-background cellkinds.
 	
 		// Runtime etc
@@ -125,21 +134,16 @@ function initializeGrid(){
 	// Seed the right number of cells for each cellkind
 	for( cellkind = 0; cellkind < nrcells.length; cellkind ++ ){
 			
-		for( i = 0; i < nrcells[cellkind]; i++ ){
-			// first cell always at the midpoint. Any other cells
-			// randomly.				
-			if( i == 0 ){
-                this.gm.seedCellAt( cellkind+1, this.C.midpoint )
-			} else {
-                if(cellkind == 0){
-				    this.gm.seedCell(1)
-                }
-                else{
-                    this.gm.seedCell(2) //maybe insert something here so the red blobs have a standard position, using seedCellAt. That way, the blobs dont spawn in eachother
-                } //using cellkind + 1 doesnt seem to work, for whatever reason
-			}
-		}
+		let step = 51
+	
+	    for( let i = 1 ; i < this.C.extents[0] ; i += step ){
+		    for( let j = 1 ; j < this.C.extents[1] ; j += step ){
+			    this.gm.seedCellAt( 2, [i,j] )
+		    }
+	    }
 	}
+
+
 }
 
 </script>
