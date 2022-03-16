@@ -134,10 +134,10 @@ function initializeGrid(){
 	// Seed the right number of cells for each cellkind
 	for( cellkind = 0; cellkind < nrcells.length; cellkind ++ ){
 			
-		let step = 51
+		let step = 50
 	
-	    for( let i = 1 ; i < this.C.extents[0] ; i += step ){
-		    for( let j = 1 ; j < this.C.extents[1] ; j += step ){
+	    for( let i = 20 ; i < this.C.extents[0] ; i += step ){
+		    for( let j = 20 ; j < this.C.extents[1] ; j += step ){
 			    this.gm.seedCellAt( 2, [i,j] )
 		    }
 	    }
